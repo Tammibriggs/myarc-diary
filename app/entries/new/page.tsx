@@ -8,6 +8,8 @@ import { X, ChevronLeft, Save, Tag, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { TiptapEditor } from '@/components/editor/TiptapEditor';
+
 export default function NewEntryPage() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -30,7 +32,10 @@ export default function NewEntryPage() {
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
-                    <span className="text-sm font-medium text-muted-foreground">October 26, 2024</span>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium text-muted-foreground">October 26, 2024</span>
+                        <span className="text-[10px] text-muted-foreground/50">Autosaved at 08:24 AM</span>
+                    </div>
                 </div>
                 <div className="flex items-center space-x-3">
                     <Button variant="ghost" className="rounded-full space-x-2">
@@ -39,45 +44,41 @@ export default function NewEntryPage() {
                     </Button>
                     <Button className="rounded-full px-6 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
                         <Save className="w-4 h-4 mr-2" />
-                        Save Entry
+                        <span className="hidden sm:inline">Save Entry</span>
+                        <span className="sm:hidden">Save</span>
                     </Button>
                 </div>
             </header>
 
             {/* Editor Content */}
-            <main className="pt-28 pb-20 px-6 max-w-3xl mx-auto">
+            <main className="pt-16 pb-0 px-0 md:pt-28 md:px-6 max-w-3xl mx-auto overflow-hidden">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/80 backdrop-blur-xl rounded-[40px] shadow-2xl shadow-black/5 border border-white/50 p-8 md:p-12 min-h-[70vh] flex flex-col"
+                    className="bg-white/80 backdrop-blur-xl md:rounded-[40px] md:shadow-2xl md:shadow-black/5 md:border md:border-white/50 p-6 md:p-12 min-h-[calc(100vh-4rem)] md:min-h-[80vh] flex flex-col"
                 >
-                    {/* Subtle Tip */}
-                    <div className="flex items-center space-x-2 text-primary/60 mb-8 bg-primary/5 w-fit px-4 py-1 rounded-full">
-                        <Sparkles className="w-4 h-4" />
-                        <span className="text-xs font-semibold uppercase tracking-wider">Passive Insight</span>
-                    </div>
+
 
                     <textarea
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="text-4xl md:text-5xl font-bold bg-transparent border-none outline-none resize-none placeholder:text-black/10 mb-6 h-fit"
+                        className="text-4xl md:text-5xl font-bold bg-transparent border-none outline-none resize-none placeholder:text-black/10 mb-6 h-fit overflow-hidden"
                         placeholder="Title your reflection..."
                         rows={1}
+                        onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = target.scrollHeight + 'px';
+                        }}
                     />
 
-                    <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="flex-1 w-full text-xl leading-relaxed bg-transparent border-none outline-none resize-none placeholder:text-black/10 font-serif"
+                    <TiptapEditor
+                        content={content}
+                        onChange={setContent}
                         placeholder="What's moving you today? Start typing..."
                     />
                 </motion.div>
             </main>
-
-            {/* Footer Info */}
-            <footer className="fixed bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground/50">
-                Autosaved at 08:24 AM
-            </footer>
         </div>
     );
 }
