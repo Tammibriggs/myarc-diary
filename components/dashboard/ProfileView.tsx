@@ -2,11 +2,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { User, Zap, Search, Plus, Book, ArrowUpRight, ChevronRight, X, LogOut } from 'lucide-react';
+import { User, Zap, Search, Plus, Book, ArrowUpRight, ChevronRight, X, LogOut, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ThemeType } from '@/context/ThemeContext';
 import { useSession, signOut } from 'next-auth/react';
+import axios from 'axios';
 
 interface ProfileViewProps {
     currentFocus: string;
@@ -21,8 +22,12 @@ export function ProfileView({
     currentTheme,
     setTheme,
 }: ProfileViewProps) {
-    const { data: session } = useSession();
-    const [activeOverlay, setActiveOverlay] = useState<'email' | 'notifications' | null>(null);
+    const { data: session, update } = useSession();
+    const [activeOverlay, setActiveOverlay] = useState<'email' | 'notifications' | 'privacy' | null>(null);
+    const [pin, setPin] = useState('');
+    const [confirmPin, setConfirmPin] = useState('');
+    const [pinError, setPinError] = useState('');
+    const [isPinSaved, setIsPinSaved] = useState(false);
 
     const focusLenses = [
         { id: 'Career Growth', icon: Zap, color: 'text-primary' },
@@ -36,12 +41,53 @@ export function ProfileView({
     const userEmail = session?.user?.email || '';
     const userImage = session?.user?.image;
 
+    const handleSetTheme = async (theme: {
+        id: string;
+        label: string;
+        colors: string[];
+        accent: string;
+    }) => {
+        setTheme(theme.id as ThemeType);
+        try {
+            await axios.patch('/api/user/profile', { themePreference: theme.id });
+        } catch (e) {
+            console.error("Failed to save theme", e);
+        }
+    }
+
+    const handleSavePin = async () => {
+        if (pin.length < 4) {
+            setPinError("PIN must be at least 4 digits");
+            return;
+        }
+        if (pin !== confirmPin) {
+            setPinError("PINs do not match");
+            return;
+        }
+
+        try {
+            await axios.post('/api/user/pin/set', { pin });
+            setIsPinSaved(true);
+            setPin('');
+            setConfirmPin('');
+            setPinError('');
+            // Update NextAuth session so PrivacyGuard knows a PIN is set
+            await update({ privacyPinSet: true });
+            setTimeout(() => {
+                setActiveOverlay(null);
+                setIsPinSaved(false);
+            }, 2000);
+        } catch (e) {
+            setPinError("Failed to save PIN");
+        }
+    };
+
     return (
         <motion.div
-            key="profile"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-12 pb-20"
+            initial={{ opacity: 0, }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col h-full space-y-12 pb-20"
         >
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
                 <div className="w-32 h-32 rounded-[40px] bg-linear-to-br from-primary to-secondary p-1 shadow-2xl shadow-primary/20">
@@ -140,7 +186,7 @@ export function ProfileView({
                     ].map((theme) => (
                         <button
                             key={theme.id}
-                            onClick={() => setTheme(theme.id as ThemeType)}
+                            onClick={() => handleSetTheme(theme)}
                             className={cn(
                                 "relative overflow-hidden p-6 rounded-[32px] border transition-all text-left group",
                                 currentTheme === theme.id
@@ -166,6 +212,7 @@ export function ProfileView({
                     {[
                         { label: "Email Address", value: userEmail, type: 'email' },
                         { label: "Notifications", value: "Manage preferences", type: 'notifications' },
+                        { label: "Privacy & Security", value: "Manage PIN & Access", type: 'privacy' },
                     ].map((item, i) => (
                         <button
                             key={i}
@@ -236,7 +283,7 @@ export function ProfileView({
                                         <p className="text-xs text-muted-foreground text-center">Contact support to change your primary account email.</p>
                                     </div>
                                 </div>
-                            ) : (
+                            ) : activeOverlay === 'notifications' ? (
                                 <div className="space-y-8">
                                     <div className="space-y-2">
                                         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-2">
@@ -270,11 +317,61 @@ export function ProfileView({
                                         <Button className="w-full h-14 rounded-2xl text-lg font-bold mt-4">Save Preferences</Button>
                                     </div>
                                 </div>
+                            ) : (
+                                <div className="space-y-8">
+                                    <div className="space-y-2">
+                                        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-2">
+                                            <ShieldCheck className="w-8 h-8" />
+                                        </div>
+                                        <h2 className="text-3xl font-bold">Privacy & Security</h2>
+                                        <p className="text-muted-foreground">Secure your journal with a personal PIN.</p>
+                                    </div>
+
+                                    {isPinSaved ? (
+                                        <div className="p-6 bg-emerald-50 rounded-2xl text-center">
+                                            <ShieldCheck className="w-12 h-12 text-emerald-500 mx-auto mb-2" />
+                                            <h3 className="text-xl font-bold text-emerald-800">PIN Saved!</h3>
+                                            <p className="text-emerald-600">Your journal is now protected.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">New PIN</label>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Enter 4-digit PIN"
+                                                    className="h-14 rounded-2xl bg-black/5 text-center text-2xl tracking-[12px] font-bold placeholder:tracking-normal placeholder:text-sm"
+                                                    maxLength={4}
+                                                    value={pin}
+                                                    onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Confirm PIN</label>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="Confirm 4-digit PIN"
+                                                    className="h-14 rounded-2xl bg-black/5 text-center text-2xl tracking-[12px] font-bold placeholder:tracking-normal placeholder:text-sm"
+                                                    maxLength={4}
+                                                    value={confirmPin}
+                                                    onChange={(e) => setConfirmPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                                />
+                                            </div>
+                                            {pinError && <p className="text-red-500 text-sm font-bold text-center bg-red-50 p-2 rounded-lg">{pinError}</p>}
+                                            <Button
+                                                className="w-full h-14 rounded-2xl text-lg font-bold mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                                onClick={handleSavePin}
+                                            >
+                                                Save Privacy PIN
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             )}
-                        </motion.div>
-                    </motion.div>
+                        </motion.div >
+                    </motion.div >
                 )}
-            </AnimatePresence>
-        </motion.div>
+            </AnimatePresence >
+        </motion.div >
     );
 }

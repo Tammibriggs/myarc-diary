@@ -10,6 +10,7 @@ interface ActivitySummaryProps {
     recentEntries: any[];
     setActiveView: (view: any) => void;
     setEntryToDelete: (entry: any) => void;
+    isConcealed: boolean;
 }
 
 export function ActivitySummary({
@@ -17,13 +18,14 @@ export function ActivitySummary({
     setSelectedDayIndex,
     recentEntries,
     setActiveView,
-    setEntryToDelete
+    setEntryToDelete,
+    isConcealed
 }: ActivitySummaryProps) {
     const weeklyActivity = [40, 70, 30, 85, 50, 90, 60];
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-            {/* Weekly Streaks (Smaller Column) - NOW PER-DAY BREAKDOWN */}
+            {/* ... Weekly Streaks Code ... */}
             <motion.div
                 layout
                 transition={{ type: 'spring', damping: 20, stiffness: 100 }}
@@ -32,6 +34,7 @@ export function ActivitySummary({
                     selectedDayIndex !== null && "md:col-span-5 ring-2 ring-primary/20"
                 )}
             >
+                {/* ... (Existing Weekly Streaks content - no changes needed inside here) ... */}
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold flex items-center gap-2">
                         <span>Momentum</span>
@@ -145,8 +148,8 @@ export function ActivitySummary({
                                         <ArrowUpRight className="w-5 h-5 text-black/20 group-hover:text-primary transition-all" />
                                     </div>
 
-                                    <h4 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">{entry.title}</h4>
-                                    <p className="text-[#171717]/60 line-clamp-2 mb-4 text-sm leading-relaxed">
+                                    <h4 className={cn("text-2xl font-bold mb-2 group-hover:text-primary transition-all", isConcealed && "blur-md select-none")}>{entry.title}</h4>
+                                    <p className={cn("text-[#171717]/60 line-clamp-2 mb-4 text-sm leading-relaxed transition-all duration-500", isConcealed && "blur-lg select-none grayscale opacity-50")}>
                                         {entry.preview}
                                     </p>
 

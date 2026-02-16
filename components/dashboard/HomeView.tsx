@@ -11,13 +11,15 @@ interface HomeViewProps {
     recentEntries: any[];
     setActiveView: (view: any) => void;
     setEntryToDelete: (entry: any) => void;
+    isConcealed: boolean;
 }
 
 export function HomeView({
     currentFocus,
     recentEntries,
     setActiveView,
-    setEntryToDelete
+    setEntryToDelete,
+    isConcealed
 }: HomeViewProps) {
     const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
 
@@ -57,7 +59,7 @@ export function HomeView({
                                 <div className="w-6 h-6 rounded-full border-2 border-primary/20 mr-4 flex items-center justify-center group-hover:border-primary/40 transition-colors">
                                     <div className="w-2 h-2 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
-                                <span className="font-semibold text-[#171717]/80">{action}</span>
+                                <span className={cn("font-semibold text-[#171717]/80 transition-all duration-300", isConcealed && "blur-sm select-none")}>{action}</span>
                             </motion.button>
                         ))}
                     </div>
@@ -79,6 +81,7 @@ export function HomeView({
                 recentEntries={recentEntries}
                 setActiveView={setActiveView}
                 setEntryToDelete={setEntryToDelete}
+                isConcealed={isConcealed}
             />
         </motion.div>
     );

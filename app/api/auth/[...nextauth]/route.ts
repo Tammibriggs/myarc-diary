@@ -78,6 +78,15 @@ const handler = NextAuth({
                 session.user.currentFocus = token.currentFocus as string;
                 // @ts-ignore
                 session.user.themePreference = token.themePreference as string;
+                // @ts-ignore
+                session.user.settings = {
+                    privacy: {
+                        // @ts-ignore
+                        enableConcealedMode: token.enableConcealedMode as boolean
+                    }
+                };
+                // @ts-ignore
+                session.user.privacyPinSet = token.privacyPinSet as boolean;
             }
             return session;
         },
@@ -88,6 +97,8 @@ const handler = NextAuth({
                 token.isOnboarded = dbUser.isOnboarded;
                 token.currentFocus = dbUser.currentFocus;
                 token.themePreference = dbUser.themePreference;
+                token.enableConcealedMode = dbUser.settings?.privacy?.enableConcealedMode ?? false;
+                token.privacyPinSet = !!dbUser.privacyPin;
             };
 
             // 1. Initial sign-in — always fetch fresh from DB
@@ -100,7 +111,7 @@ const handler = NextAuth({
 
             // 2. Client-triggered update (e.g., after onboarding) — whitelist fields
             if (trigger === "update" && session) {
-                const allowed = ['isOnboarded', 'currentFocus', 'themePreference'] as const;
+                const allowed = ['isOnboarded', 'currentFocus', 'themePreference', 'enableConcealedMode', 'privacyPinSet'] as const;
                 for (const key of allowed) {
                     if (session[key] !== undefined) {
                         token[key] = session[key];

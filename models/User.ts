@@ -12,6 +12,9 @@ const UserSchema = new Schema({
     settings: {
         emailNotifications: { type: Boolean, default: true },
         dailyReminders: { type: Boolean, default: true },
+        privacy: {
+            enableConcealedMode: { type: Boolean, default: false },
+        },
     },
 }, { timestamps: true });
 

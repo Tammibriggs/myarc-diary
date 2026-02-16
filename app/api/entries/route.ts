@@ -6,6 +6,9 @@ import Short from "@/models/Short";
 import DailyArc from "@/models/DailyArc";
 import { analyzeEntry } from "@/lib/gemini";
 import { syncToMemory } from "@/lib/mem0";
+import dbConnect from "@/lib/mongodb";
+
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function GET(req: Request) {
     const session = await getServerSession();
@@ -29,7 +32,14 @@ export async function GET(req: Request) {
 
     try {
         const entries = await Entry.find(query).sort({ date: -1 });
-        return NextResponse.json(entries);
+
+        // Decrypt content for client
+        const decryptedEntries = entries.map((entry: any) => ({
+            ...entry.toObject(),
+            content: decrypt(entry.content),
+        }));
+
+        return NextResponse.json(decryptedEntries);
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch entries" }, { status: 500 });
     }
@@ -54,7 +64,8 @@ export async function POST(req: Request) {
         const newEntry = await Entry.create({
             userId: user._id,
             title,
-            content,
+            content: encrypt(content),
+            isEncrypted: true,
             tags,
             date: new Date(),
         });

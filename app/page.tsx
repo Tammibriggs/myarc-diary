@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
 import { useSession } from 'next-auth/react';
+import axios from 'axios';
 
 // Component Imports
 import { HomeView } from '@/components/dashboard/HomeView';
@@ -23,7 +24,7 @@ import { ShortsView } from '@/components/dashboard/ShortsView';
 import { ProfileView } from '@/components/dashboard/ProfileView';
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const { currentTheme, setTheme, colors } = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [selectedTag, setSelectedTag] = useState('All');
   const [expandedShort, setExpandedShort] = useState<'realizations' | 'goals' | null>(null);
   const [entryToDelete, setEntryToDelete] = useState<any>(null);
+  const [isConcealed, setIsConcealed] = useState(false); // Added state
 
   // New function to update state and URL
   const setActiveView = (view: 'home' | 'entries' | 'shorts' | 'profile') => {
@@ -54,11 +56,23 @@ export default function Dashboard() {
       // @ts-ignore
       const hasTheme = !!session?.user?.themePreference;
 
-      if (hasTheme) {
-        // Sync theme from DB
-        // @ts-ignore
-        setTheme(session.user.themePreference);
-      }
+      // Only sync if we haven't already loaded a theme (or strictly on first load)
+      // Actually, let's just rely on the ThemeContext to handle persistence.
+      // But we do want to pull the user's saved preference from DB on login.
+      // The issue is this effect runs repeatedly.
+
+      // We can remove this block if we trust ThemeProvider.
+      // However, to fix the specific bug:
+      // We should only set the theme if the session theme is different from the current theme 
+      // AND we generally trust the session as the source of truth on initial load.
+
+      // A better approach: The ProfileView updates the DB. NextAuth session serves stale data until refresh.
+      // So if you change theme in ProfileView, session still has old theme.
+      // This useEffect sees old theme in session, and resets your local state back to old theme.
+
+      // FIX: Remove this sync block. The ThemeContext persists to localStorage. 
+      // When the user logs in, we can update localStorage in the auth callback or just let the user set it. 
+      // OR, we can just remove this conflict.
     }
 
     const view = searchParams.get('view') as any;
@@ -75,6 +89,28 @@ export default function Dashboard() {
       setCurrentFocus(session.user.currentFocus);
     }
   }, [session]);
+
+  // Sync privacy settings
+  useEffect(() => {
+    // @ts-ignore
+    if (session?.user?.settings?.privacy?.enableConcealedMode) {
+      setIsConcealed(true);
+    }
+  }, [session]);
+
+  const toggleConcealed = async () => {
+    const newState = !isConcealed;
+    setIsConcealed(newState);
+    try {
+      await axios.patch('/api/user/profile', {
+        privacy: { enableConcealedMode: newState }
+      });
+      // Update NextAuth session
+      await update({ enableConcealedMode: newState });
+    } catch (e) {
+      console.error("Failed to save privacy setting", e);
+    }
+  };
 
   // Mock Data
   const recentEntries = [
@@ -166,6 +202,7 @@ export default function Dashboard() {
               recentEntries={recentEntries}
               setActiveView={setActiveView}
               setEntryToDelete={setEntryToDelete}
+              isConcealed={isConcealed} // Added prop
             />
           )}
 
@@ -177,6 +214,8 @@ export default function Dashboard() {
               setSelectedTag={setSelectedTag}
               filteredEntries={filteredEntries}
               setEntryToDelete={setEntryToDelete}
+              isConcealed={isConcealed} // Added prop
+              onToggleConcealed={toggleConcealed} // Added prop
             />
           )}
 

@@ -26,20 +26,29 @@ export async function PATCH(req: Request) {
 
     await dbConnect();
     const body = await req.json();
-    const { name, themePreference, currentFocus, settings, isOnboarded } = body;
+    const { name, themePreference, currentFocus, settings, isOnboarded, privacy } = body;
+
+    const updateFields: any = {};
+    if (name) updateFields.name = name;
+    if (themePreference) updateFields.themePreference = themePreference;
+    if (currentFocus) updateFields.currentFocus = currentFocus;
+    if (typeof isOnboarded === 'boolean') updateFields.isOnboarded = isOnboarded;
+
+    // Handle nested settings updates carefully
+    if (settings) {
+        if (typeof settings.emailNotifications === 'boolean') updateFields['settings.emailNotifications'] = settings.emailNotifications;
+        if (typeof settings.dailyReminders === 'boolean') updateFields['settings.dailyReminders'] = settings.dailyReminders;
+    }
+
+    // Handle privacy settings
+    if (privacy) {
+        if (typeof privacy.enableConcealedMode === 'boolean') updateFields['settings.privacy.enableConcealedMode'] = privacy.enableConcealedMode;
+    }
 
     try {
         const updatedUser = await User.findOneAndUpdate(
             { email: session.user.email },
-            {
-                $set: {
-                    ...(name && { name }),
-                    ...(themePreference && { themePreference }),
-                    ...(currentFocus && { currentFocus }),
-                    ...(settings && { settings }),
-                    ...(typeof isOnboarded === 'boolean' && { isOnboarded }),
-                }
-            },
+            { $set: updateFields },
             { new: true }
         ).select('-privacyPin');
 

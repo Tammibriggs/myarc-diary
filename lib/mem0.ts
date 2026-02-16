@@ -1,11 +1,11 @@
-import { Memory } from "mem0ai";
+import { MemoryClient } from "mem0ai";
 
 const apiKey = process.env.MEM0_API_KEY;
 
 // Initialize Mem0 Client
 // Note: This initialization might need adjustment based on Mem0's specific Node.js SDK
 // For now, we'll assume a standard client structure.
-const memory = apiKey ? new Memory({ apiKey }) : null;
+const memory = apiKey ? new MemoryClient({ apiKey }) : null;
 
 export async function syncToMemory(userId: string, content: string) {
     if (!memory) {
@@ -14,7 +14,7 @@ export async function syncToMemory(userId: string, content: string) {
     }
 
     try {
-        await memory.add(content, { user_id: userId });
+        await memory.add([{ role: "user", content: content }], { user_id: userId });
     } catch (error) {
         console.error("Mem0 Sync Error:", error);
     }

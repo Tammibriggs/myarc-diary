@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Trash2, ArrowUpRight } from 'lucide-react';
+import { Plus, Search, Trash2, ArrowUpRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -13,6 +13,8 @@ interface EntriesViewProps {
     setSelectedTag: (tag: string) => void;
     filteredEntries: any[];
     setEntryToDelete: (entry: any) => void;
+    isConcealed: boolean;
+    onToggleConcealed: () => void;
 }
 
 export function EntriesView({
@@ -20,8 +22,12 @@ export function EntriesView({
     selectedTag,
     setSelectedTag,
     filteredEntries,
-    setEntryToDelete
+    setEntryToDelete,
+    isConcealed,
+    onToggleConcealed
 }: EntriesViewProps) {
+    // Local state removed in favor of lifted state
+
     return (
         <motion.div
             key="entries"
@@ -34,12 +40,24 @@ export function EntriesView({
                     <h2 className="text-4xl font-extrabold tracking-tight">Your Arc</h2>
                     <p className="text-muted-foreground text-sm font-medium">124 Total Reflections</p>
                 </div>
-                <Link href="/entries/new">
-                    <Button size="lg" className="rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 group font-bold">
-                        <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-                        New Reflection
+                <div className="flex gap-3">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={onToggleConcealed}
+                        className="rounded-full w-12 h-12 border-2 hover:bg-slate-100"
+                        title={isConcealed ? "Reveal Content" : "Conceal Content"}
+                    >
+                        {isConcealed ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                     </Button>
-                </Link>
+
+                    <Link href="/entries/new">
+                        <Button size="lg" className="rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 group font-bold">
+                            <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+                            New Reflection
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <div className="relative group">
@@ -79,7 +97,9 @@ export function EntriesView({
                             <div className={cn("absolute inset-0 bg-linear-to-br opacity-5 group-hover:opacity-20 transition-opacity", entry.gradient)} />
                             <div className="flex justify-between items-start mb-4">
                                 <div className="space-y-1">
-                                    <h3 className="text-2xl font-bold">{entry.title}</h3>
+                                    <h3 className={cn("text-2xl font-bold transition-all duration-300", isConcealed && "blur-md select-none")}>
+                                        {entry.title}
+                                    </h3>
                                     <span className="text-xs font-bold text-muted-foreground/50 tracking-widest">{entry.date}</span>
                                 </div>
                                 <div className="relative z-10">
@@ -94,9 +114,17 @@ export function EntriesView({
                                     >
                                         <Trash2 className="w-5 h-5" />
                                     </Button>
+                                    {entry.isEncrypted && (
+                                        <div className="absolute top-10 right-2 text-[10px] text-emerald-500 font-bold flex items-center gap-1 opacity-50">
+                                            <ShieldCheck className="w-3 h-3" /> Encrypted
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                            <p className="text-muted-foreground line-clamp-3 leading-relaxed mb-6 font-serif italic text-lg">
+                            <p className={cn(
+                                "text-muted-foreground line-clamp-3 leading-relaxed mb-6 font-serif italic text-lg transition-all duration-500",
+                                isConcealed && "blur-lg select-none grayscale opacity-50"
+                            )}>
                                 &quot;{entry.preview}&quot;
                             </p>
                             <div className="flex gap-2">
