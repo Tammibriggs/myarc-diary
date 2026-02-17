@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
+import { createPortal } from 'react-dom';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -16,8 +17,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
+import axios from 'axios';
 
 interface TiptapEditorProps {
     content: string;
@@ -25,17 +27,34 @@ interface TiptapEditorProps {
     placeholder?: string;
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
+const MenuBar = ({ editor, position }: { editor: any; position: 'top' | 'bottom' }) => {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     if (!editor) {
         return null;
     }
 
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
+        if (!file) return;
+
+        // Validate file size (3MB)
+        if (file.size > 3 * 1024 * 1024) {
+            alert('Image must be less than 3MB');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const { data } = await axios.post('/api/upload', formData);
+            editor.chain().focus().setImage({ src: data.url }).run();
+        } catch (error) {
+            console.error('Image upload failed:', error);
+            // Fallback to base64 if upload fails
             const reader = new FileReader();
             reader.onload = (e) => {
                 const result = e.target?.result;
@@ -44,6 +63,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
                 }
             };
             reader.readAsDataURL(file);
+        } finally {
+            setIsUploading(false);
+            // Reset input so the same file can be selected again
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -53,10 +76,16 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
     const onEmojiClick = (emojiData: any) => {
         editor.chain().focus().insertContent(emojiData.emoji).run();
+        setShowEmojiPicker(false);
     };
 
+    const isBottom = position === 'bottom';
+
     return (
-        <div className="flex flex-wrap items-center gap-1 mb-4 p-2 bg-black/5 rounded-2xl border border-black/5">
+        <div className={cn(
+            "flex flex-wrap items-center gap-1 p-2 bg-black/5 rounded-2xl border border-black/5 [&_button]:cursor-pointer",
+            isBottom ? "mb-0 mt-2" : "mb-4 mt-0"
+        )}>
             <Button
                 variant="ghost"
                 size="sm"
@@ -97,7 +126,8 @@ const MenuBar = ({ editor }: { editor: any }) => {
                 variant="ghost"
                 size="sm"
                 onClick={addImage}
-                className="w-10 h-10 rounded-xl"
+                disabled={isUploading}
+                className={cn("w-10 h-10 rounded-xl", isUploading && "opacity-50")}
             >
                 <ImageIcon className="w-4 h-4" />
             </Button>
@@ -119,14 +149,20 @@ const MenuBar = ({ editor }: { editor: any }) => {
                     <Smile className="w-4 h-4" />
                 </Button>
                 {showEmojiPicker && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center sm:absolute sm:inset-auto sm:top-full sm:left-0 sm:mt-2">
+                    <div className={cn(
+                        "fixed inset-0 z-50 flex items-end justify-center pb-16",
+                        "sm:absolute sm:inset-auto sm:pb-0 sm:mt-2",
+                        isBottom
+                            ? "sm:bottom-full sm:left-0 sm:mb-2 sm:mt-0"
+                            : "sm:top-full sm:left-0"
+                    )}>
                         <div className="fixed inset-0 bg-black/20 sm:bg-transparent" onClick={() => setShowEmojiPicker(false)} />
                         <div className="relative z-50">
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
                                 width={350}
                                 height={400}
-                                style={{ maxWidth: '90vw' }}
+                                style={{ maxWidth: '90vw', maxHeight: 'calc(100vh - 120px)' }}
                             />
                         </div>
                     </div>
@@ -157,6 +193,12 @@ const MenuBar = ({ editor }: { editor: any }) => {
 };
 
 export const TiptapEditor = ({ content, onChange, placeholder }: TiptapEditorProps) => {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const editor = useEditor({
         immediatelyRender: false,
         extensions: [
@@ -178,9 +220,21 @@ export const TiptapEditor = ({ content, onChange, placeholder }: TiptapEditorPro
     });
 
     return (
-        <div className="w-full h-full flex flex-col flex-1">
-            <MenuBar editor={editor} />
-            <EditorContent editor={editor} className="flex-1 overflow-y-auto flex flex-col" />
+        <div className="w-full flex flex-col flex-1 md:max-h-[60vh]">
+            {/* Desktop: menu bar at top */}
+            <div className="hidden md:block shrink-0">
+                <MenuBar editor={editor} position="top" />
+            </div>
+
+            <EditorContent editor={editor} className="flex-1 min-h-0 overflow-y-auto flex flex-col pb-20 md:pb-0" />
+
+            {/* Mobile: menu bar portaled to body so it escapes any transformed ancestor */}
+            {mounted && createPortal(
+                <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5 p-2 md:hidden safe-bottom">
+                    <MenuBar editor={editor} position="bottom" />
+                </div>,
+                document.body
+            )}
         </div>
     );
 };

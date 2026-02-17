@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, use } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Save, X, Loader2 } from 'lucide-react';
@@ -9,21 +9,41 @@ import axios from 'axios';
 
 import { TiptapEditor } from '@/components/editor/TiptapEditor';
 
-export default function NewEntryPage() {
+export default function EntryPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tags, setTags] = useState<string[]>([]);
     const [tagInput, setTagInput] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [entryDate, setEntryDate] = useState('');
     const router = useRouter();
 
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-    });
+    // Fetch entry on mount
+    useEffect(() => {
+        const fetchEntry = async () => {
+            try {
+                const { data } = await axios.get(`/api/entries/${id}`);
+                setTitle(data.title);
+                setContent(data.content);
+                setTags(data.tags || []);
+                setEntryDate(
+                    new Date(data.date).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                    })
+                );
+            } catch (err) {
+                setError('Failed to load entry');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchEntry();
+    }, [id]);
 
     const addTag = (value: string) => {
         const tag = value.trim();
@@ -59,7 +79,7 @@ export default function NewEntryPage() {
         setError('');
         setIsSaving(true);
         try {
-            await axios.post('/api/entries', {
+            await axios.put(`/api/entries/${id}`, {
                 title: title.trim(),
                 content,
                 tags,
@@ -72,6 +92,14 @@ export default function NewEntryPage() {
         }
     };
 
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-primary/50" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#F3F4F6] text-[#171717] font-sans selection:bg-primary/20">
@@ -91,7 +119,7 @@ export default function NewEntryPage() {
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
                     <div className="flex flex-col">
-                        <span className="text-sm font-medium text-muted-foreground">{formattedDate}</span>
+                        <span className="text-sm font-medium text-muted-foreground">{entryDate}</span>
                     </div>
                 </div>
                 <div className="flex items-center space-x-3">

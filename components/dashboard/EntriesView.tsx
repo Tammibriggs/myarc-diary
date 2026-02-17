@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Trash2, ArrowUpRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Plus, Search, Trash2, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface EntriesViewProps {
     currentFocus?: string;
@@ -15,6 +16,30 @@ interface EntriesViewProps {
     setEntryToDelete: (entry: any) => void;
     isConcealed: boolean;
     onToggleConcealed: () => void;
+    isLoading: boolean;
+    hasMore: boolean;
+    onLoadMore: () => void;
+    totalCount: number;
+    searchQuery: string;
+    onSearchChange: (query: string) => void;
+}
+
+const GRADIENT_POOL = [
+    'from-purple-500/10 to-blue-500/10',
+    'from-green-500/10 to-emerald-500/10',
+    'from-orange-500/10 to-red-500/10',
+    'from-pink-500/10 to-rose-500/10',
+    'from-cyan-500/10 to-teal-500/10',
+    'from-indigo-500/10 to-violet-500/10',
+];
+
+function getGradient(index: number) {
+    return GRADIENT_POOL[index % GRADIENT_POOL.length];
+}
+
+function formatDate(dateStr: string) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export function EntriesView({
@@ -24,9 +49,44 @@ export function EntriesView({
     filteredEntries,
     setEntryToDelete,
     isConcealed,
-    onToggleConcealed
+    onToggleConcealed,
+    isLoading,
+    hasMore,
+    onLoadMore,
+    totalCount,
+    searchQuery,
+    onSearchChange,
 }: EntriesViewProps) {
-    // Local state removed in favor of lifted state
+    const router = useRouter();
+    const [localSearch, setLocalSearch] = useState(searchQuery);
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            onSearchChange(localSearch);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [localSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Infinite scroll sentinel
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !isLoading) {
+                    onLoadMore();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [hasMore, isLoading, onLoadMore]);
 
     return (
         <motion.div
@@ -38,7 +98,9 @@ export function EntriesView({
             <div className="flex items-center justify-between px-2">
                 <div className="space-y-1">
                     <h2 className="text-4xl font-extrabold tracking-tight">Your Arc</h2>
-                    <p className="text-muted-foreground text-sm font-medium">124 Total Reflections</p>
+                    <p className="text-muted-foreground text-sm font-medium">
+                        {totalCount} Total Reflection{totalCount !== 1 ? 's' : ''}
+                    </p>
                 </div>
                 <div className="flex gap-3">
                     <Button
@@ -62,7 +124,12 @@ export function EntriesView({
 
             <div className="relative group">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                <Input className="pl-14 h-16 rounded-[24px] bg-white border-white/50 shadow-xl shadow-black/5 text-xl placeholder:text-black/10 transition-all focus:ring-primary/20" placeholder="Search your history..." />
+                <Input
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
+                    className="pl-14 h-16 rounded-[24px] bg-white border-white/50 shadow-xl shadow-black/5 text-xl placeholder:text-black/10 transition-all focus:ring-primary/20"
+                    placeholder="Search your history..."
+                />
             </div>
 
             <div className="flex flex-wrap gap-2 px-2">
@@ -86,21 +153,24 @@ export function EntriesView({
                 <AnimatePresence mode="popLayout">
                     {filteredEntries.map((entry, i) => (
                         <motion.div
-                            key={`${entry.id}-${i}`}
+                            key={entry._id || `entry-${i}`}
                             layout
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
                             transition={{ duration: 0.2 }}
+                            onClick={() => router.push(`/entries/${entry._id}`)}
                             className="group p-8 rounded-[40px] bg-white border border-white/50 hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden"
                         >
-                            <div className={cn("absolute inset-0 bg-linear-to-br opacity-5 group-hover:opacity-20 transition-opacity", entry.gradient)} />
+                            <div className={cn("absolute inset-0 bg-linear-to-br opacity-5 group-hover:opacity-20 transition-opacity", getGradient(i))} />
                             <div className="flex justify-between items-start mb-4">
                                 <div className="space-y-1">
                                     <h3 className={cn("text-2xl font-bold transition-all duration-300", isConcealed && "blur-md select-none")}>
                                         {entry.title}
                                     </h3>
-                                    <span className="text-xs font-bold text-muted-foreground/50 tracking-widest">{entry.date}</span>
+                                    <span className="text-xs font-bold text-muted-foreground/50 tracking-widest">
+                                        {formatDate(entry.date)}
+                                    </span>
                                 </div>
                                 <div className="relative z-10">
                                     <Button
@@ -125,10 +195,10 @@ export function EntriesView({
                                 "text-muted-foreground line-clamp-3 leading-relaxed mb-6 font-serif italic text-lg transition-all duration-500",
                                 isConcealed && "blur-lg select-none grayscale opacity-50"
                             )}>
-                                &quot;{entry.preview}&quot;
+                                &quot;{entry.preview || 'No preview available'}&quot;
                             </p>
-                            <div className="flex gap-2">
-                                {entry.tags.map((tag: any) => (
+                            <div className="flex gap-2 flex-wrap">
+                                {entry.tags?.map((tag: string) => (
                                     <span key={tag} className="text-[10px] font-bold uppercase py-1 px-3 border border-black/5 bg-black/5 rounded-full">{tag}</span>
                                 ))}
                             </div>
@@ -136,6 +206,39 @@ export function EntriesView({
                     ))}
                 </AnimatePresence>
             </div>
+
+            {/* Loading spinner */}
+            {isLoading && (
+                <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+                </div>
+            )}
+
+            {/* Infinite scroll sentinel */}
+            {hasMore && !isLoading && (
+                <div ref={sentinelRef} className="h-10" />
+            )}
+
+            {/* End of list message */}
+            {!hasMore && filteredEntries.length > 0 && (
+                <p className="text-center text-sm text-muted-foreground/50 py-6 font-medium">
+                    You&apos;ve reached the end of your reflections
+                </p>
+            )}
+
+            {/* Empty state */}
+            {!isLoading && filteredEntries.length === 0 && (
+                <div className="text-center py-20 space-y-4">
+                    <p className="text-2xl font-bold text-muted-foreground/30">No reflections yet</p>
+                    <p className="text-muted-foreground/50">Start your journey by creating your first reflection</p>
+                    <Link href="/entries/new">
+                        <Button size="lg" className="rounded-full shadow-lg mt-4">
+                            <Plus className="w-5 h-5 mr-2" />
+                            New Reflection
+                        </Button>
+                    </Link>
+                </div>
+            )}
         </motion.div>
     );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import {
   Book,
   Zap,
   User,
-  Search,
   Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,7 +34,16 @@ export default function Dashboard() {
   const [selectedTag, setSelectedTag] = useState('All');
   const [expandedShort, setExpandedShort] = useState<'realizations' | 'goals' | null>(null);
   const [entryToDelete, setEntryToDelete] = useState<any>(null);
-  const [isConcealed, setIsConcealed] = useState(false); // Added state
+  const [isConcealed, setIsConcealed] = useState(false);
+
+  // Entries state
+  const [entries, setEntries] = useState<any[]>([]);
+  const [allTags, setAllTags] = useState<string[]>(['All']);
+  const [entriesPage, setEntriesPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingEntries, setIsLoadingEntries] = useState(false);
+  const [totalEntries, setTotalEntries] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // New function to update state and URL
   const setActiveView = (view: 'home' | 'entries' | 'shorts' | 'profile') => {
@@ -45,34 +53,79 @@ export default function Dashboard() {
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
+  // Fetch entries
+  const fetchEntries = useCallback(async (page: number, tag: string, search: string, append: boolean = false) => {
+    if (isLoadingEntries) return;
+    setIsLoadingEntries(true);
+    try {
+      const params: any = { page, limit: 10 };
+      if (tag && tag !== 'All') params.tag = tag;
+      if (search) params.search = search;
+      const { data } = await axios.get('/api/entries', { params });
+      setEntries(prev => append ? [...prev, ...data.entries] : data.entries);
+      setTotalEntries(data.totalCount);
+      setHasMore(data.hasMore);
+      setEntriesPage(data.page);
+    } catch (error) {
+      console.error('Failed to fetch entries:', error);
+    } finally {
+      setIsLoadingEntries(false);
+    }
+  }, [isLoadingEntries]);
+
+  // Fetch tags
+  const fetchTags = useCallback(async () => {
+    try {
+      const { data } = await axios.get('/api/entries/tags');
+      setAllTags(['All', ...data]);
+    } catch (error) {
+      console.error('Failed to fetch tags:', error);
+    }
+  }, []);
+
+  // Load more entries (for infinite scroll)
+  const loadMoreEntries = useCallback(() => {
+    if (!isLoadingEntries && hasMore) {
+      fetchEntries(entriesPage + 1, selectedTag, searchQuery, true);
+    }
+  }, [isLoadingEntries, hasMore, entriesPage, selectedTag, searchQuery, fetchEntries]);
+
+  // Fetch entries and tags on mount
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchEntries(1, selectedTag, searchQuery);
+      fetchTags();
+    }
+  }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Refetch when tag filter changes
+  useEffect(() => {
+    if (status === 'authenticated') {
+      setEntriesPage(1);
+      setHasMore(true);
+      fetchEntries(1, selectedTag, searchQuery);
+    }
+  }, [selectedTag]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Refetch when search query changes (debounced in EntriesView)
+  useEffect(() => {
+    if (status === 'authenticated') {
+      setEntriesPage(1);
+      setHasMore(true);
+      fetchEntries(1, selectedTag, searchQuery);
+    }
+  }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Filter entries client-side (tags already applied server-side, but kept for consistency)
+  const filteredEntries = selectedTag === 'All'
+    ? entries
+    : entries.filter(e => e.tags?.includes(selectedTag));
+
   // Session Sync
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth');
       return;
-    }
-
-    if (status === 'authenticated') {
-      // @ts-ignore
-      const hasTheme = !!session?.user?.themePreference;
-
-      // Only sync if we haven't already loaded a theme (or strictly on first load)
-      // Actually, let's just rely on the ThemeContext to handle persistence.
-      // But we do want to pull the user's saved preference from DB on login.
-      // The issue is this effect runs repeatedly.
-
-      // We can remove this block if we trust ThemeProvider.
-      // However, to fix the specific bug:
-      // We should only set the theme if the session theme is different from the current theme 
-      // AND we generally trust the session as the source of truth on initial load.
-
-      // A better approach: The ProfileView updates the DB. NextAuth session serves stale data until refresh.
-      // So if you change theme in ProfileView, session still has old theme.
-      // This useEffect sees old theme in session, and resets your local state back to old theme.
-
-      // FIX: Remove this sync block. The ThemeContext persists to localStorage. 
-      // When the user logs in, we can update localStorage in the auth callback or just let the user set it. 
-      // OR, we can just remove this conflict.
     }
 
     const view = searchParams.get('view') as any;
@@ -112,41 +165,19 @@ export default function Dashboard() {
     }
   };
 
-  // Mock Data
-  const recentEntries = [
-    {
-      id: 1,
-      title: "Morning Thoughts",
-      date: "Oct 26",
-      time: "08:15 AM",
-      tags: ["Clarity"],
-      preview: "Today I felt a sudden surge of energy after reading the new project specs...",
-      gradient: "from-purple-500/10 to-blue-500/10"
-    },
-    {
-      id: 2,
-      title: "The CEO Vision",
-      date: "Oct 25",
-      time: "11:30 PM",
-      tags: ["Focus", "Career"],
-      preview: "I need to stop worrying about the small stuff and focus on the big arc...",
-      gradient: "from-green-500/10 to-emerald-500/10"
-    },
-    {
-      id: 3,
-      title: "Handling Chaos",
-      date: "Oct 20",
-      time: "02:45 PM",
-      tags: ["Resilience"],
-      preview: "Everything went wrong today, but I managed to stay calm and...",
-      gradient: "from-orange-500/10 to-red-500/10"
-    },
-  ];
-
-  const allTags = ['All', ...new Set(recentEntries.flatMap(e => e.tags))];
-  const filteredEntries = selectedTag === 'All'
-    ? [...recentEntries, ...recentEntries]
-    : [...recentEntries, ...recentEntries].filter(e => e.tags.includes(selectedTag));
+  // Delete entry handler
+  const handleDeleteEntry = async () => {
+    if (!entryToDelete) return;
+    try {
+      await axios.delete(`/api/entries/${entryToDelete._id}`);
+      setEntries(prev => prev.filter(e => e._id !== entryToDelete._id));
+      setTotalEntries(prev => prev - 1);
+      setEntryToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete entry:", error);
+      setEntryToDelete(null);
+    }
+  };
 
   return (
     <div
@@ -171,9 +202,6 @@ export default function Dashboard() {
           </h1>
         </div>
         <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Search className="w-5 h-5 text-muted-foreground" />
-          </Button>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveView('profile')}
@@ -199,10 +227,10 @@ export default function Dashboard() {
           {activeView === 'home' && (
             <HomeView
               currentFocus={currentFocus}
-              recentEntries={recentEntries}
+              recentEntries={entries.slice(0, 3)}
               setActiveView={setActiveView}
               setEntryToDelete={setEntryToDelete}
-              isConcealed={isConcealed} // Added prop
+              isConcealed={isConcealed}
             />
           )}
 
@@ -214,8 +242,14 @@ export default function Dashboard() {
               setSelectedTag={setSelectedTag}
               filteredEntries={filteredEntries}
               setEntryToDelete={setEntryToDelete}
-              isConcealed={isConcealed} // Added prop
-              onToggleConcealed={toggleConcealed} // Added prop
+              isConcealed={isConcealed}
+              onToggleConcealed={toggleConcealed}
+              isLoading={isLoadingEntries}
+              hasMore={hasMore}
+              onLoadMore={loadMoreEntries}
+              totalCount={totalEntries}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           )}
 
@@ -305,11 +339,7 @@ export default function Dashboard() {
                   </Button>
                   <Button
                     variant="destructive"
-                    onClick={() => {
-                      // In a real app, you would call your delete API here
-                      console.log("Deleted entry:", entryToDelete.id);
-                      setEntryToDelete(null);
-                    }}
+                    onClick={handleDeleteEntry}
                     className="h-14 rounded-2xl font-bold shadow-lg shadow-red-500/20"
                   >
                     Delete

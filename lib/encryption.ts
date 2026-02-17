@@ -13,7 +13,7 @@ export function encrypt(text: string): string {
     // Key must be Buffer or string. 
     // If string, we can use a hash to ensure it is 32 bytes if needed, 
     // but better to just use a 32 char key in .env
-    const key = Buffer.from(ENCRYPTION_KEY, 'utf-8').subarray(0, 32);
+    const key = crypto.createHash('sha256').update(ENCRYPTION_KEY).digest();
 
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
 
@@ -34,7 +34,7 @@ export function decrypt(text: string): string {
     const iv = Buffer.from(textParts.shift()!, 'hex');
     const encryptedText = Buffer.from(textParts.join(':'), 'hex');
 
-    const key = Buffer.from(ENCRYPTION_KEY, 'utf-8').subarray(0, 32);
+    const key = crypto.createHash('sha256').update(ENCRYPTION_KEY).digest();
 
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
 

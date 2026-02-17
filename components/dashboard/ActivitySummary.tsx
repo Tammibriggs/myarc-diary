@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, X, Book, Zap, ArrowUpRight, Clock, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface ActivitySummaryProps {
     selectedDayIndex: number | null;
@@ -21,7 +22,19 @@ export function ActivitySummary({
     setEntryToDelete,
     isConcealed
 }: ActivitySummaryProps) {
-    const weeklyActivity = [40, 70, 30, 85, 50, 90, 60];
+    const router = useRouter();
+    const weekLabels = (() => {
+        const labels: string[] = [];
+        const now = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - (i * 7) - now.getDay() + 1);
+            labels.push(`${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`);
+        }
+        return labels;
+    })();
+
+    const weeklyActivity = [35, 55, 70, 40, 85, 60, 90];
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
@@ -37,9 +50,9 @@ export function ActivitySummary({
                 {/* ... (Existing Weekly Streaks content - no changes needed inside here) ... */}
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold flex items-center gap-2">
-                        <span>Momentum</span>
+                        <span>Weekly Momentum</span>
                         {selectedDayIndex !== null && (
-                            <span className="text-sm font-normal text-muted-foreground">/ {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][selectedDayIndex]}</span>
+                            <span className="text-sm font-normal text-muted-foreground">/ Week of {weekLabels[selectedDayIndex]}</span>
                         )}
                     </h3>
                     <div className="flex items-center gap-2">
@@ -52,14 +65,14 @@ export function ActivitySummary({
                     </div>
                 </div>
 
-                <div className="flex items-end justify-between h-32 px-2 mb-8">
+                <div className="flex items-end justify-between h-32 px-2 mb-8 gap-1">
                     {weeklyActivity.map((h, i) => (
                         <div
                             key={i}
                             onClick={() => setSelectedDayIndex(i)}
-                            className="flex flex-col items-center gap-3 group h-full justify-end cursor-pointer"
+                            className="flex flex-col items-center gap-3 group h-full justify-end cursor-pointer flex-1"
                         >
-                            <div className="relative w-4 bg-black/5 rounded-full h-full overflow-hidden">
+                            <div className="relative w-full max-w-[20px] bg-black/5 rounded-full h-full overflow-hidden">
                                 <motion.div
                                     initial={{ height: 0 }}
                                     animate={{ height: `${h}%` }}
@@ -71,10 +84,10 @@ export function ActivitySummary({
                                 />
                             </div>
                             <span className={cn(
-                                "text-[10px] font-bold uppercase tracking-tighter transition-colors",
+                                "text-[9px] font-bold uppercase tracking-tighter transition-colors whitespace-nowrap",
                                 selectedDayIndex === i ? "text-primary" : "text-muted-foreground/50"
                             )}>
-                                {['m', 't', 'w', 't', 'f', 's', 's'][i]}
+                                {`WK${i + 1}`}
                             </span>
                         </div>
                     ))}
@@ -91,9 +104,9 @@ export function ActivitySummary({
                         >
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {[
-                                    { label: "Reflect", value: "85%", icon: Book, color: "text-primary", desc: "Consistency Habit" },
-                                    { label: "Discover", value: "2", icon: Zap, color: "text-secondary", desc: "Insights Extracted" },
-                                    { label: "Act", value: "100%", icon: ArrowUpRight, color: "text-purple-500", desc: "Arc Prompts Met" },
+                                    { label: "Reflect", value: "85%", icon: Book, color: "text-primary", desc: "Weekly Consistency" },
+                                    { label: "Discover", value: "2", icon: Zap, color: "text-secondary", desc: "Insights This Week" },
+                                    { label: "Act", value: "100%", icon: ArrowUpRight, color: "text-purple-500", desc: "Weekly Goals Met" },
                                 ].map((item, i) => (
                                     <div key={i} className="space-y-3">
                                         <div className="flex items-center gap-2">
@@ -109,7 +122,7 @@ export function ActivitySummary({
                             </div>
                             <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
                                 <p className="text-sm text-[#171717]/80 leading-relaxed italic">
-                                    &quot;On this day, your momentum peaked because you converted a reflection about &apos;Client Feedback&apos; into a long-term goal. High insight depth detected.&quot;
+                                    &quot;This week, your momentum peaked because you converted a reflection about &apos;Client Feedback&apos; into a long-term goal. High insight depth detected.&quot;
                                 </p>
                             </div>
                         </motion.div>
@@ -132,9 +145,10 @@ export function ActivitySummary({
                     <div className="space-y-4">
                         {recentEntries.slice(0, 2).map((entry) => (
                             <div
-                                key={entry.id}
+                                key={entry._id || entry.id}
+                                onClick={() => router.push(`/entries/${entry._id || entry.id}`)}
                                 className={cn(
-                                    "group relative rounded-[32px] bg-white border border-white/50 p-6 flex flex-col transition-all duration-300 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-1 overflow-hidden"
+                                    "group relative rounded-[32px] bg-white border border-white/50 p-6 flex flex-col transition-all duration-300 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-1 overflow-hidden cursor-pointer"
                                 )}
                             >
                                 <div className={cn("absolute inset-0 bg-linear-to-br opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none", entry.gradient)} />
