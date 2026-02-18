@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Save, X, Loader2, Sparkles, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,8 @@ export default function NewEntryPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
     const [aiPrompt, setAiPrompt] = useState<string | null>(null);
+    const [insightShorts, setInsightShorts] = useState<any[]>([]);
+    const [showInsightModal, setShowInsightModal] = useState(false);
     const router = useRouter();
 
     const today = new Date();
@@ -76,12 +78,19 @@ export default function NewEntryPage() {
         setError('');
         setIsSaving(true);
         try {
-            await axios.post('/api/entries', {
+            const { data } = await axios.post('/api/entries', {
                 title: title.trim(),
                 content,
                 tags,
             });
-            router.push('/?view=entries');
+
+            // Check for immediate growth insights (Goals/Habits detected)
+            if (data.aiAnalysis?.shorts && data.aiAnalysis.shorts.length > 0) {
+                setInsightShorts(data.aiAnalysis.shorts);
+                setShowInsightModal(true);
+            } else {
+                router.push('/?view=entries');
+            }
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to save entry');
         } finally {
@@ -145,6 +154,52 @@ export default function NewEntryPage() {
                             {error}
                         </motion.div>
                     )}
+
+                    {/* Growth Insight Modal Overlay */}
+                    <AnimatePresence>
+                        {showInsightModal && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/20 backdrop-blur-sm">
+                                <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.9, opacity: 0 }}
+                                    className="bg-white rounded-[32px] shadow-2xl p-8 max-w-md w-full relative overflow-hidden border border-white/50"
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-primary via-purple-500 to-secondary" />
+                                    <div className="flex flex-col items-center text-center space-y-4">
+                                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                                            <Sparkles className="w-8 h-8" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-gray-900">New Insight Detected!</h3>
+                                        <p className="text-gray-600">
+                                            Based on your reflection, we've identified new focus areas for your arc.
+                                        </p>
+
+                                        <div className="w-full space-y-3 my-4 text-left">
+                                            {insightShorts.map((short, i) => (
+                                                <div key={i} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-start gap-3">
+                                                    <div className="p-2 bg-white rounded-xl shadow-xs shrink-0 text-primary">
+                                                        {short.type === 'goal' ? <div className="i-lucide-target w-4 h-4" /> : <div className="i-lucide-activity w-4 h-4" />}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-primary">{short.type}</span>
+                                                        <p className="text-sm font-semibold text-gray-800">{short.content}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <Button
+                                            onClick={() => router.push('/?view=entries')}
+                                            className="w-full h-12 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
+                                        >
+                                            Continue to Journal
+                                        </Button>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+                    </AnimatePresence>
 
                     {/* AI Prompt */}
                     {aiPrompt && (
@@ -240,6 +295,6 @@ export default function NewEntryPage() {
                     />
                 </motion.div>
             </main>
-        </div>
+        </div >
     );
 }

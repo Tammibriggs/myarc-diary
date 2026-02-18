@@ -38,6 +38,8 @@ export async function PATCH(req: Request) {
     if (settings) {
         if (typeof settings.emailNotifications === 'boolean') updateFields['settings.emailNotifications'] = settings.emailNotifications;
         if (typeof settings.dailyReminders === 'boolean') updateFields['settings.dailyReminders'] = settings.dailyReminders;
+        if (typeof settings.growthInsights === 'boolean') updateFields['settings.growthInsights'] = settings.growthInsights;
+        if (typeof settings.momentumReminders === 'boolean') updateFields['settings.momentumReminders'] = settings.momentumReminders;
     }
 
     // Handle privacy settings

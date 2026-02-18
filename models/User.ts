@@ -12,6 +12,8 @@ const UserSchema = new Schema({
     settings: {
         emailNotifications: { type: Boolean, default: true },
         dailyReminders: { type: Boolean, default: true },
+        growthInsights: { type: Boolean, default: true }, // In-app pattern detection alerts
+        momentumReminders: { type: Boolean, default: true }, // Email nudges
         privacy: {
             enableConcealedMode: { type: Boolean, default: false },
         },

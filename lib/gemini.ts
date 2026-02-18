@@ -114,6 +114,27 @@ New Entry:
 }
 
 /**
+ * Simple text generation helper for non-structured prompts.
+ */
+export async function generateText(prompt: string): Promise<string> {
+  if (!genAI) {
+    console.warn("Gemini API Key not set");
+    return "";
+  }
+
+  try {
+    const result = await genAI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [{ parts: [{ text: prompt }] }],
+    });
+    return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  } catch (error) {
+    console.error("Gemini Generation Error:", error);
+    return "";
+  }
+}
+
+/**
  * Legacy single-entry analysis (fallback if context fetch fails).
  */
 export async function analyzeEntry(content: string) {

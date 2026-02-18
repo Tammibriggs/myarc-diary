@@ -29,6 +29,10 @@ export function ProfileView({
     const [confirmPin, setConfirmPin] = useState('');
     const [pinError, setPinError] = useState('');
     const [isPinSaved, setIsPinSaved] = useState(false);
+    const [userSettings, setUserSettings] = useState({
+        growthInsights: true,
+        momentumReminders: true
+    });
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -46,6 +50,32 @@ export function ProfileView({
         };
         fetchStats();
     }, []);
+
+    // Seperate effect for profile settings to avoid index confusion if I was lazy above
+    useEffect(() => {
+        axios.get('/api/user/profile').then(res => {
+            if (res.data && res.data.settings) {
+                setUserSettings({
+                    growthInsights: res.data.settings.growthInsights ?? true,
+                    momentumReminders: res.data.settings.momentumReminders ?? true
+                });
+            }
+        }).catch(e => console.error(e));
+    }, []);
+
+    const toggleSetting = async (key: 'growthInsights' | 'momentumReminders') => {
+        const newValue = !userSettings[key];
+        setUserSettings(prev => ({ ...prev, [key]: newValue }));
+        try {
+            await axios.patch('/api/user/profile', {
+                settings: { [key]: newValue }
+            });
+        } catch (e) {
+            console.error("Failed to save setting", e);
+            // Revert on error
+            setUserSettings(prev => ({ ...prev, [key]: !newValue }));
+        }
+    };
 
     const focusLenses = [
         { id: 'Career Growth', icon: Zap, color: 'text-primary' },
@@ -311,27 +341,39 @@ export function ProfileView({
                                     </div>
                                     <div className="space-y-4">
                                         {[
-                                            { title: "Growth Insights", desc: "Detected patterns and realizations", checked: true },
-                                            { title: "Momentum Reminders", desc: "Gentle nudges to keep your arc going", checked: true },
-                                            { title: "Weekly Reports", desc: "Deep dive into your progress", checked: false },
+                                            {
+                                                id: 'growthInsights',
+                                                title: "Growth Insights",
+                                                desc: "Immediate alerts when habits/goals are detected",
+                                                checked: userSettings.growthInsights
+                                            },
+                                            {
+                                                id: 'momentumReminders',
+                                                title: "Momentum Reminders",
+                                                desc: "Email nudges if you miss 24h (Gmail)",
+                                                checked: userSettings.momentumReminders
+                                            },
                                         ].map((pref, i) => (
-                                            <div key={i} className="flex items-center justify-between p-5 rounded-3xl bg-black/5">
+                                            <div
+                                                key={i}
+                                                className="flex items-center justify-between p-5 rounded-3xl bg-black/5 cursor-pointer hover:bg-black/10 transition-colors"
+                                                onClick={() => toggleSetting(pref.id as any)}
+                                            >
                                                 <div>
                                                     <p className="font-bold text-sm">{pref.title}</p>
                                                     <p className="text-[10px] text-muted-foreground font-medium">{pref.desc}</p>
                                                 </div>
                                                 <div className={cn(
-                                                    "w-12 h-6 rounded-full transition-colors relative cursor-pointer",
+                                                    "w-12 h-6 rounded-full transition-colors relative",
                                                     pref.checked ? "bg-primary" : "bg-black/10"
                                                 )}>
                                                     <div className={cn(
-                                                        "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
+                                                        "absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm",
                                                         pref.checked ? "right-1" : "left-1"
                                                     )} />
                                                 </div>
                                             </div>
                                         ))}
-                                        <Button className="w-full h-14 rounded-2xl text-lg font-bold mt-4">Save Preferences</Button>
                                     </div>
                                 </div>
                             ) : (
