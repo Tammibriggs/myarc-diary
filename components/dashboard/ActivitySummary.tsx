@@ -62,7 +62,7 @@ export function ActivitySummary({
                 layout
                 transition={{ type: 'spring', damping: 20, stiffness: 100 }}
                 className={cn(
-                    "md:col-span-2 h-fit rounded-[32px] bg-white/60 border border-white/50 p-8 backdrop-blur-md transition-all hover:shadow-xl relative overflow-hidden",
+                    "md:col-span-2 h-fit rounded-[32px] bg-white/60 dark:bg-zinc-900/50 border border-white/50 dark:border-white/5 p-8 backdrop-blur-md transition-all hover:shadow-xl relative overflow-hidden",
                     selectedDayIndex !== null && "md:col-span-5 ring-2 ring-primary/20"
                 )}
             >
@@ -88,10 +88,10 @@ export function ActivitySummary({
                     {isLoading ? (
                         Array.from({ length: 7 }).map((_, i) => (
                             <div key={i} className="flex flex-col items-center gap-3 h-full justify-end flex-1">
-                                <div className="w-full max-w-[20px] bg-black/5 rounded-full h-full relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-linear-to-t from-black/10 to-transparent animate-pulse" />
+                                <div className="w-full max-w-[20px] bg-muted/50 dark:bg-white/5 rounded-full h-full relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/10 dark:from-white/10 to-transparent animate-pulse" />
                                 </div>
-                                <div className="h-2 w-8 bg-black/5 rounded animate-pulse" />
+                                <div className="h-2 w-8 bg-muted/50 dark:bg-white/5 rounded animate-pulse" />
                             </div>
                         ))
                     ) : (
@@ -101,7 +101,7 @@ export function ActivitySummary({
                                 onClick={() => setSelectedDayIndex(i)}
                                 className="flex flex-col items-center gap-3 group h-full justify-end cursor-pointer flex-1"
                             >
-                                <div className="relative w-full max-w-[20px] bg-black/5 rounded-full h-full overflow-hidden">
+                                <div className="relative w-full max-w-[20px] bg-muted/50 dark:bg-white/5 rounded-full h-full overflow-hidden">
                                     <motion.div
                                         initial={{ height: 0 }}
                                         animate={{ height: `${week.score}%` }}
@@ -140,10 +140,10 @@ export function ActivitySummary({
                                 ].map((item, i) => (
                                     <div key={i} className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <div className={cn("p-2 rounded-lg bg-black/5", item.color)}>
+                                            <div className={cn("p-2 rounded-lg bg-muted/50 dark:bg-white/5", item.color)}>
                                                 <item.icon className="w-4 h-4" />
                                             </div>
-                                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#171717]/40">{item.label}</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{item.label}</p>
                                         </div>
                                         <p className="text-3xl font-black">{item.value}</p>
                                         <p className="text-[10px] font-medium text-muted-foreground">{item.desc}</p>
@@ -151,7 +151,7 @@ export function ActivitySummary({
                                 ))}
                             </div>
                             <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
-                                <p className="text-sm text-[#171717]/80 leading-relaxed italic">
+                                <p className="text-sm text-foreground/80 leading-relaxed italic">
                                     &quot;This week, your momentum peaked because you converted a reflection about &apos;Client Feedback&apos; into a long-term goal. High insight depth detected.&quot;
                                 </p>
                             </div>
@@ -178,7 +178,7 @@ export function ActivitySummary({
                                 key={entry._id || entry.id}
                                 onClick={() => router.push(`/entries/${entry._id || entry.id}`)}
                                 className={cn(
-                                    "group relative rounded-[32px] bg-white border border-white/50 p-6 flex flex-col transition-all duration-300 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-1 overflow-hidden cursor-pointer"
+                                    "group relative rounded-[32px] bg-white/80 dark:bg-zinc-900/50 border border-white/50 dark:border-white/5 p-6 flex flex-col transition-all duration-300 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-1 overflow-hidden cursor-pointer backdrop-blur-sm"
                                 )}
                             >
                                 <div className={cn("absolute inset-0 bg-linear-to-br opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none", entry.gradient)} />
@@ -193,13 +193,13 @@ export function ActivitySummary({
                                     </div>
 
                                     <h4 className={cn("text-2xl font-bold mb-2 group-hover:text-primary transition-all", isConcealed && "blur-md select-none")}>{entry.title}</h4>
-                                    <p className={cn("text-[#171717]/60 line-clamp-2 mb-4 text-sm leading-relaxed transition-all duration-500", isConcealed && "blur-lg select-none grayscale opacity-50")}>
+                                    <p className={cn("text-foreground/60 line-clamp-2 mb-4 text-sm leading-relaxed transition-all duration-500", isConcealed && "blur-lg select-none grayscale opacity-50")}>
                                         {entry.preview}
                                     </p>
 
                                     <div className="flex gap-2">
                                         {entry.tags.map((tag: any) => (
-                                            <span key={tag} className="text-[10px] uppercase tracking-wider px-3 py-1 rounded-full bg-white/80 border border-black/5 text-[#171717] font-bold shadow-sm">
+                                            <span key={tag} className="text-[10px] uppercase tracking-wider px-3 py-1 rounded-full bg-white/80 dark:bg-white/10 border border-black/5 dark:border-white/10 text-foreground font-bold shadow-sm">
                                                 {tag}
                                             </span>
                                         ))}

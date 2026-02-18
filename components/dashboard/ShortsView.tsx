@@ -229,7 +229,7 @@ export function ShortsView({ expandedShort, setExpandedShort }: ShortsViewProps)
 
     // ─── Category Toggle ─────────────────────────────────────────────
     const renderCategoryToggle = (activeCategory: ShortType, setCategory: (c: ShortType) => void) => (
-        <div className="flex gap-1 bg-black/5 rounded-full p-1 flex-wrap">
+        <div className="flex gap-1 bg-muted/50 dark:bg-white/5 rounded-full p-1 flex-wrap">
             {allCategories.map(cat => {
                 const Icon = cat.icon;
                 return (
@@ -239,7 +239,7 @@ export function ShortsView({ expandedShort, setExpandedShort }: ShortsViewProps)
                         className={cn(
                             "px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1",
                             activeCategory === cat.key
-                                ? "bg-white text-primary shadow-sm"
+                                ? "bg-white dark:bg-zinc-800 text-primary shadow-sm"
                                 : "text-muted-foreground hover:text-foreground"
                         )}
                     >
@@ -290,7 +290,7 @@ export function ShortsView({ expandedShort, setExpandedShort }: ShortsViewProps)
                 <>
                     <div className="absolute -left-6 top-1 text-primary/20 text-6xl font-serif italic pointer-events-none">&quot;</div>
                     <p
-                        className="text-xl md:text-2xl font-medium leading-tight text-[#171717]/80 hover:text-primary transition-colors cursor-pointer"
+                        className="text-xl md:text-2xl font-medium leading-tight text-foreground/80 hover:text-primary transition-colors cursor-pointer"
                         onClick={() => startEditing(habit._id, habit.content)}
                     >
                         {habit.content}
@@ -328,7 +328,7 @@ export function ShortsView({ expandedShort, setExpandedShort }: ShortsViewProps)
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.05 }}
-                className="p-6 rounded-[32px] bg-white border border-secondary/20 shadow-xl shadow-secondary/5 group/goal"
+                className="p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/50 border border-secondary/20 shadow-xl shadow-secondary/5 group/goal backdrop-blur-sm"
             >
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
@@ -561,7 +561,7 @@ export function ShortsView({ expandedShort, setExpandedShort }: ShortsViewProps)
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+                        className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-white/20"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {!fabAction ? (
@@ -616,8 +616,8 @@ export function ShortsView({ expandedShort, setExpandedShort }: ShortsViewProps)
                                                     createTargetType === cat.key
                                                         ? cat.key === 'habit' ? "border-primary bg-primary/5 text-primary"
                                                             : cat.key === 'goal' ? "border-secondary bg-secondary/5 text-secondary"
-                                                                : "border-black/20 bg-black/5 text-foreground"
-                                                        : "border-transparent bg-black/5 text-muted-foreground"
+                                                                : "border-black/20 dark:border-white/20 bg-muted/50 dark:bg-white/5 text-foreground"
+                                                        : "border-transparent bg-muted/50 dark:bg-white/5 text-muted-foreground"
                                                 )}
                                             >
                                                 <Icon className="w-4 h-4" />
@@ -778,7 +778,7 @@ export function ShortsView({ expandedShort, setExpandedShort }: ShortsViewProps)
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="bg-white rounded-3xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden p-6 text-center space-y-4"
+                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden p-6 text-center space-y-4 border border-white/20"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-2">

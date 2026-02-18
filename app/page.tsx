@@ -184,7 +184,7 @@ function DashboardContent() {
 
   return (
     <div
-      className="min-h-screen bg-[#F3F4F6] text-[#171717] relative overflow-hidden font-sans selection:bg-primary/20"
+      className="min-h-screen bg-background text-foreground relative overflow-hidden font-sans selection:bg-primary/20"
     >
 
       {/* Background Ambience */}

@@ -32,7 +32,7 @@ export function HomeView({
             className="space-y-10"
         >
             {/* Hero Card: Today's Focus */}
-            <div className="relative overflow-hidden rounded-[40px] bg-white border border-white/50 shadow-2xl shadow-black/5 p-8 md:p-12">
+            <div className="relative overflow-hidden rounded-[40px] bg-white/80 dark:bg-zinc-900/50 border border-white/50 dark:border-white/5 shadow-2xl shadow-black/5 p-8 md:p-12 backdrop-blur-sm">
                 <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
                     <Zap className="w-64 h-64 text-primary" />
                 </div>

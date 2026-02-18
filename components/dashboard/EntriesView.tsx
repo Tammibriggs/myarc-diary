@@ -107,7 +107,7 @@ export function EntriesView({
                         variant="outline"
                         size="icon"
                         onClick={onToggleConcealed}
-                        className="rounded-full w-12 h-12 border-2 hover:bg-slate-100"
+                        className="rounded-full w-12 h-12 border-2 hover:bg-muted"
                         title={isConcealed ? "Reveal Content" : "Conceal Content"}
                     >
                         {isConcealed ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
@@ -127,7 +127,7 @@ export function EntriesView({
                 <Input
                     value={localSearch}
                     onChange={(e) => setLocalSearch(e.target.value)}
-                    className="pl-14 h-16 rounded-[24px] bg-white border-white/50 shadow-xl shadow-black/5 text-xl placeholder:text-black/10 transition-all focus:ring-primary/20"
+                    className="pl-14 h-16 rounded-[24px] bg-white/80 dark:bg-white/5 border-white/50 dark:border-white/10 shadow-xl shadow-black/5 text-xl placeholder:text-muted-foreground transition-all focus:ring-primary/20 backdrop-blur-md"
                     placeholder="Search your history..."
                 />
             </div>
@@ -141,7 +141,7 @@ export function EntriesView({
                             "px-5 py-2 rounded-full text-xs font-bold transition-all border",
                             selectedTag === tag
                                 ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                                : "bg-white/50 border-black/5 text-muted-foreground hover:bg-white hover:border-black/10"
+                                : "bg-white/50 dark:bg-white/5 border-black/5 dark:border-white/10 text-muted-foreground hover:bg-white dark:hover:bg-white/10 hover:border-black/10"
                         )}
                     >
                         {tag}
@@ -160,7 +160,7 @@ export function EntriesView({
                             exit={{ opacity: 0, scale: 0.9 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => router.push(`/entries/${entry._id}`)}
-                            className="group p-8 rounded-[40px] bg-white border border-white/50 hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden"
+                            className="group p-8 rounded-[40px] bg-white/80 dark:bg-zinc-900/50 border border-white/50 dark:border-white/5 hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden backdrop-blur-sm"
                         >
                             <div className={cn("absolute inset-0 bg-linear-to-br opacity-5 group-hover:opacity-20 transition-opacity", getGradient(i))} />
                             <div className="flex justify-between items-start mb-4">

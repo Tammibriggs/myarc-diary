@@ -116,12 +116,12 @@ function OnboardingContent() {
                                         "p-5 rounded-2xl border text-left transition-all group flex items-start gap-4",
                                         focus === item.id
                                             ? 'border-primary bg-primary/5 ring-1 ring-primary shadow-lg shadow-primary/5 scale-[1.02]'
-                                            : 'border-black/5 hover:border-primary/50 hover:bg-muted/50'
+                                            : 'border-border/50 bg-card hover:border-primary/50 hover:bg-muted/50'
                                     )}
                                 >
                                     <div className={cn(
                                         "p-2.5 rounded-xl transition-colors",
-                                        focus === item.id ? "bg-primary text-white" : "bg-black/5 " + item.color
+                                        focus === item.id ? "bg-primary text-white" : "bg-muted " + item.color
                                     )}>
                                         <item.icon className="w-5 h-5" />
                                     </div>

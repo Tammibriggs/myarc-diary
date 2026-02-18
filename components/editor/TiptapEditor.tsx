@@ -83,7 +83,7 @@ const MenuBar = ({ editor, position }: { editor: any; position: 'top' | 'bottom'
 
     return (
         <div className={cn(
-            "flex flex-wrap items-center gap-1 p-2 bg-black/5 rounded-2xl border border-black/5 [&_button]:cursor-pointer",
+            "flex flex-wrap items-center gap-1 p-2 bg-muted/50 dark:bg-zinc-800/50 rounded-2xl border border-border/50 [&_button]:cursor-pointer",
             isBottom ? "mb-0 mt-2" : "mb-4 mt-0"
         )}>
             <Button
@@ -104,7 +104,7 @@ const MenuBar = ({ editor, position }: { editor: any; position: 'top' | 'bottom'
             >
                 <Italic className="w-4 h-4" />
             </Button>
-            <div className="w-px h-6 bg-black/10 mx-1" />
+            <div className="w-px h-6 bg-border/50 mx-1" />
             <Button
                 variant="ghost"
                 size="sm"
@@ -121,7 +121,7 @@ const MenuBar = ({ editor, position }: { editor: any; position: 'top' | 'bottom'
             >
                 <ListOrdered className="w-4 h-4" />
             </Button>
-            <div className="w-px h-6 bg-black/10 mx-1" />
+            <div className="w-px h-6 bg-border/50 mx-1" />
             <Button
                 variant="ghost"
                 size="sm"
@@ -169,7 +169,7 @@ const MenuBar = ({ editor, position }: { editor: any; position: 'top' | 'bottom'
                 )}
             </div>
 
-            <div className="w-px h-6 bg-black/10 mx-1" />
+            <div className="w-px h-6 bg-border/50 mx-1" />
             <Button
                 variant="ghost"
                 size="sm"
@@ -214,7 +214,7 @@ export const TiptapEditor = ({ content, onChange, placeholder }: TiptapEditorPro
         },
         editorProps: {
             attributes: {
-                class: 'prose prose-lg max-w-none focus:outline-none h-full flex-1 font-serif leading-relaxed prose-p:my-2 prose-headings:mt-4 prose-headings:mb-2',
+                class: 'prose prose-lg dark:prose-invert max-w-none focus:outline-none h-full flex-1 font-serif leading-relaxed prose-p:my-2 prose-headings:mt-4 prose-headings:mb-2 text-foreground',
             },
         },
     });
@@ -237,7 +237,7 @@ export const TiptapEditor = ({ content, onChange, placeholder }: TiptapEditorPro
 
             {/* Mobile: menu bar portaled to body so it escapes any transformed ancestor */}
             {mounted && createPortal(
-                <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5 p-2 md:hidden safe-bottom">
+                <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 p-2 md:hidden safe-bottom">
                     <MenuBar editor={editor} position="bottom" />
                 </div>,
                 document.body

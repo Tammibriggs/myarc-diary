@@ -95,26 +95,26 @@ export default function EntryPage({ params }: { params: Promise<{ id: string }> 
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-10 h-10 animate-spin text-primary/50" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#F3F4F6] text-[#171717] font-sans selection:bg-primary/20">
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
             {/* Background Ambience */}
             <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none" />
 
             {/* Header */}
-            <header className="fixed top-0 w-full z-40 bg-white/50 backdrop-blur-md px-6 h-16 flex items-center justify-between border-b border-black/5">
+            <header className="fixed top-0 w-full z-40 bg-white/50 dark:bg-black/50 backdrop-blur-md px-6 h-16 flex items-center justify-between border-b border-black/5 dark:border-white/5">
                 <div className="flex items-center space-x-4">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => router.back()}
-                        className="rounded-full hover:bg-black/5"
+                        className="rounded-full hover:bg-muted"
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
@@ -144,7 +144,7 @@ export default function EntryPage({ params }: { params: Promise<{ id: string }> 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/80 backdrop-blur-xl md:rounded-[40px] md:shadow-2xl md:shadow-black/5 md:border md:border-white/50 p-6 md:p-12 min-h-[calc(100vh-4rem)] md:min-h-[80vh] flex flex-col"
+                    className="bg-white/80 dark:bg-zinc-900/50 backdrop-blur-xl md:rounded-[40px] md:shadow-2xl md:shadow-black/5 md:border md:border-white/50 dark:md:border-white/5 p-6 md:p-12 min-h-[calc(100vh-4rem)] md:min-h-[80vh] flex flex-col"
                 >
                     {/* Error message */}
                     {error && (
@@ -160,7 +160,7 @@ export default function EntryPage({ params }: { params: Promise<{ id: string }> 
                     <textarea
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="text-4xl md:text-5xl font-bold bg-transparent border-none outline-none resize-none placeholder:text-black/10 mb-4 h-fit overflow-hidden"
+                        className="text-4xl md:text-5xl font-bold bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/40 mb-4 h-fit overflow-hidden text-foreground"
                         placeholder="Title your reflection..."
                         rows={1}
                         onInput={(e) => {
@@ -195,7 +195,7 @@ export default function EntryPage({ params }: { params: Promise<{ id: string }> 
                                 if (tagInput.trim()) addTag(tagInput);
                             }}
                             placeholder={tags.length === 0 ? "Add tags (press Enter)" : "Add more..."}
-                            className="text-sm bg-transparent border-none outline-none placeholder:text-black/15 min-w-[120px] flex-1 py-1.5"
+                            className="text-sm bg-transparent border-none outline-none placeholder:text-muted-foreground/60 min-w-[120px] flex-1 py-1.5 text-foreground"
                         />
                     </div>
 

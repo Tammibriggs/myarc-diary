@@ -100,7 +100,7 @@ export default function NewEntryPage() {
 
 
     return (
-        <div className="min-h-screen bg-[#F3F4F6] text-[#171717] font-sans selection:bg-primary/20">
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
             {/* Background Ambience */}
             <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none" />
@@ -142,7 +142,7 @@ export default function NewEntryPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/80 backdrop-blur-xl md:rounded-[40px] md:shadow-2xl md:shadow-black/5 md:border md:border-white/50 p-6 md:p-12 min-h-[calc(100vh-4rem)] md:min-h-[80vh] flex flex-col"
+                    className="bg-white/80 dark:bg-zinc-900/50 backdrop-blur-xl md:rounded-[40px] md:shadow-2xl md:shadow-black/5 md:border md:border-white/50 dark:md:border-white/5 p-6 md:p-12 min-h-[calc(100vh-4rem)] md:min-h-[80vh] flex flex-col"
                 >
                     {/* Error message */}
                     {error && (
@@ -163,27 +163,27 @@ export default function NewEntryPage() {
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     exit={{ scale: 0.9, opacity: 0 }}
-                                    className="bg-white rounded-[32px] shadow-2xl p-8 max-w-md w-full relative overflow-hidden border border-white/50"
+                                    className="bg-white dark:bg-zinc-900 rounded-[32px] shadow-2xl p-8 max-w-md w-full relative overflow-hidden border border-white/50 dark:border-white/10"
                                 >
                                     <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-primary via-purple-500 to-secondary" />
                                     <div className="flex flex-col items-center text-center space-y-4">
                                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
                                             <Sparkles className="w-8 h-8" />
                                         </div>
-                                        <h3 className="text-2xl font-bold text-gray-900">New Insight Detected!</h3>
-                                        <p className="text-gray-600">
+                                        <h3 className="text-2xl font-bold text-foreground">New Insight Detected!</h3>
+                                        <p className="text-muted-foreground">
                                             Based on your reflection, we've identified new focus areas for your arc.
                                         </p>
 
                                         <div className="w-full space-y-3 my-4 text-left">
                                             {insightShorts.map((short, i) => (
-                                                <div key={i} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-start gap-3">
-                                                    <div className="p-2 bg-white rounded-xl shadow-xs shrink-0 text-primary">
+                                                <div key={i} className="p-4 rounded-2xl bg-muted/50 border border-border flex items-start gap-3">
+                                                    <div className="p-2 bg-background rounded-xl shadow-xs shrink-0 text-primary">
                                                         {short.type === 'goal' ? <div className="i-lucide-target w-4 h-4" /> : <div className="i-lucide-activity w-4 h-4" />}
                                                     </div>
                                                     <div>
                                                         <span className="text-xs font-bold uppercase tracking-wider text-primary">{short.type}</span>
-                                                        <p className="text-sm font-semibold text-gray-800">{short.content}</p>
+                                                        <p className="text-sm font-semibold text-foreground">{short.content}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -211,7 +211,7 @@ export default function NewEntryPage() {
                             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-2xl blur-xl" />
                             <div className="relative bg-white/50 backdrop-blur-md border border-indigo-100 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                                 <div className="flex gap-3">
-                                    <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl shrink-0">
+                                    <div className="p-2 bg-indigo-100 text-indigo-600 h-fit rounded-xl shrink-0">
                                         <Sparkles className="w-5 h-5" />
                                     </div>
                                     <div className="space-y-1">
@@ -249,7 +249,7 @@ export default function NewEntryPage() {
                     <textarea
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="text-4xl md:text-5xl font-bold bg-transparent border-none outline-none resize-none placeholder:text-black/10 mb-4 h-fit overflow-hidden"
+                        className="text-4xl md:text-5xl font-bold bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/40 mb-4 h-fit overflow-hidden text-foreground"
                         placeholder="Title your reflection..."
                         rows={1}
                         onInput={(e) => {
@@ -284,7 +284,7 @@ export default function NewEntryPage() {
                                 if (tagInput.trim()) addTag(tagInput);
                             }}
                             placeholder={tags.length === 0 ? "Add tags (press Enter)" : "Add more..."}
-                            className="text-sm bg-transparent border-none outline-none placeholder:text-black/15 min-w-[120px] flex-1 py-1.5"
+                            className="text-sm bg-transparent border-none outline-none placeholder:text-muted-foreground/60 min-w-[120px] flex-1 py-1.5 text-foreground"
                         />
                     </div>
 

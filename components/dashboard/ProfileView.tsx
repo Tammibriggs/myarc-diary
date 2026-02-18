@@ -139,7 +139,7 @@ export function ProfileView({
         >
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
                 <div className="w-32 h-32 rounded-[40px] bg-linear-to-br from-primary to-secondary p-1 shadow-2xl shadow-primary/20">
-                    <div className="w-full h-full bg-white rounded-[38px] flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full bg-white dark:bg-zinc-900 rounded-[38px] flex items-center justify-center overflow-hidden">
                         {userImage ? (
                             <img src={userImage} alt={userName} className="w-full h-full object-cover" />
                         ) : (
@@ -168,14 +168,14 @@ export function ProfileView({
                     { label: "Total Reflections", value: stats.reflections.toString(), color: "text-primary" },
                     { label: "Goals Achieved", value: stats.goalsAchieved.toString(), color: "text-purple-500" },
                 ].map((stat, i) => (
-                    <div key={i} className="p-8 rounded-[32px] bg-white border border-white/50 shadow-xl shadow-black/5 hover:-translate-y-1 transition-transform">
+                    <div key={i} className="p-8 rounded-[32px] bg-white/80 dark:bg-zinc-900/50 border border-white/50 dark:border-white/5 shadow-xl shadow-black/5 hover:-translate-y-1 transition-transform backdrop-blur-sm container-card">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">{stat.label}</p>
                         <p className={cn("text-5xl font-black", stat.color)}>{stat.value}</p>
                     </div>
                 ))}
             </div>
 
-            <Card className="rounded-[40px] border-white/50 shadow-2xl overflow-hidden bg-white">
+            <Card className="rounded-[40px] border-white/50 dark:border-white/5 shadow-2xl overflow-hidden bg-white dark:bg-zinc-900/50 backdrop-blur-sm">
                 <div className="bg-primary p-10 text-white relative">
                     <Zap className="absolute top-8 right-8 w-24 h-24 opacity-20" />
                     <h3 className="text-3xl font-bold mb-2">My Plan</h3>
@@ -200,13 +200,13 @@ export function ProfileView({
                             className={cn(
                                 "flex flex-col items-center justify-center p-6 rounded-[32px] border transition-all duration-300 group",
                                 currentFocus === lens.id
-                                    ? "bg-white border-primary shadow-xl shadow-primary/5 scale-105"
-                                    : "bg-white/40 border-black/5 hover:bg-white hover:border-black/10"
+                                    ? "bg-white dark:bg-zinc-800 border-primary shadow-xl shadow-primary/5 scale-105"
+                                    : "bg-white/40 dark:bg-white/5 border-black/5 dark:border-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-black/10"
                             )}
                         >
                             <div className={cn(
                                 "mb-3 p-3 rounded-2xl transition-all",
-                                currentFocus === lens.id ? "bg-primary text-white" : "bg-black/5 " + lens.color
+                                currentFocus === lens.id ? "bg-primary text-white" : "bg-black/5 dark:bg-white/10 " + lens.color
                             )}>
                                 <lens.icon className="w-6 h-6" />
                             </div>
@@ -237,8 +237,8 @@ export function ProfileView({
                             className={cn(
                                 "relative overflow-hidden p-6 rounded-[32px] border transition-all text-left group",
                                 currentTheme === theme.id
-                                    ? "bg-white border-primary shadow-xl ring-1 ring-primary/20"
-                                    : "bg-white/40 border-black/5 hover:bg-white hover:border-black/10"
+                                    ? "bg-white dark:bg-zinc-800 border-primary shadow-xl ring-1 ring-primary/20"
+                                    : "bg-white/40 dark:bg-white/5 border-black/5 dark:border-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-black/10"
                             )}
                         >
                             <div className={cn("absolute top-0 right-0 w-16 h-16 opacity-5 bg-linear-to-bl rounded-bl-full", theme.accent)} />
@@ -264,7 +264,7 @@ export function ProfileView({
                         <button
                             key={i}
                             onClick={() => setActiveOverlay(item.type as any)}
-                            className="flex items-center justify-between p-6 rounded-[32px] bg-white/60 border border-white/50 hover:bg-white transition-colors group"
+                            className="flex items-center justify-between p-6 rounded-[32px] bg-white/60 dark:bg-white/5 border border-white/50 dark:border-white/5 hover:bg-white dark:hover:bg-white/10 transition-colors group"
                         >
                             <div className="text-left">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{item.label}</p>
@@ -302,7 +302,7 @@ export function ProfileView({
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full max-w-lg bg-white rounded-[40px] shadow-2xl border border-white/50 p-10 relative overflow-hidden"
+                            className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-[40px] shadow-2xl border border-white/50 dark:border-white/10 p-10 relative overflow-hidden"
                         >
                             <Button
                                 variant="ghost"
@@ -325,7 +325,7 @@ export function ProfileView({
                                     <div className="space-y-4">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Current Email</label>
-                                            <Input defaultValue={userEmail} disabled className="h-14 rounded-2xl bg-black/5" />
+                                            <Input defaultValue={userEmail} disabled className="h-14 rounded-2xl bg-muted" />
                                         </div>
                                         <p className="text-xs text-muted-foreground text-center">Contact support to change your primary account email.</p>
                                     </div>
@@ -356,7 +356,7 @@ export function ProfileView({
                                         ].map((pref, i) => (
                                             <div
                                                 key={i}
-                                                className="flex items-center justify-between p-5 rounded-3xl bg-black/5 cursor-pointer hover:bg-black/10 transition-colors"
+                                                className="flex items-center justify-between p-5 rounded-3xl bg-muted/50 dark:bg-white/5 cursor-pointer hover:bg-muted dark:hover:bg-white/10 transition-colors"
                                                 onClick={() => toggleSetting(pref.id as any)}
                                             >
                                                 <div>
@@ -365,7 +365,7 @@ export function ProfileView({
                                                 </div>
                                                 <div className={cn(
                                                     "w-12 h-6 rounded-full transition-colors relative",
-                                                    pref.checked ? "bg-primary" : "bg-black/10"
+                                                    pref.checked ? "bg-primary" : "bg-black/10 dark:bg-white/10"
                                                 )}>
                                                     <div className={cn(
                                                         "absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm",
@@ -399,7 +399,7 @@ export function ProfileView({
                                                 <Input
                                                     type="password"
                                                     placeholder="Enter 4-digit PIN"
-                                                    className="h-14 rounded-2xl bg-black/5 text-center text-2xl tracking-[12px] font-bold placeholder:tracking-normal placeholder:text-sm"
+                                                    className="h-14 rounded-2xl bg-muted/50 dark:bg-white/5 text-center text-2xl tracking-[12px] font-bold placeholder:tracking-normal placeholder:text-sm"
                                                     maxLength={4}
                                                     value={pin}
                                                     onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
@@ -410,7 +410,7 @@ export function ProfileView({
                                                 <Input
                                                     type="password"
                                                     placeholder="Confirm 4-digit PIN"
-                                                    className="h-14 rounded-2xl bg-black/5 text-center text-2xl tracking-[12px] font-bold placeholder:tracking-normal placeholder:text-sm"
+                                                    className="h-14 rounded-2xl bg-muted/50 dark:bg-white/5 text-center text-2xl tracking-[12px] font-bold placeholder:tracking-normal placeholder:text-sm"
                                                     maxLength={4}
                                                     value={confirmPin}
                                                     onChange={(e) => setConfirmPin(e.target.value.replace(/[^0-9]/g, ''))}
