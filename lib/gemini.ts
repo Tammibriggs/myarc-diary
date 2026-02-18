@@ -60,7 +60,6 @@ GOAL DETECTION (type: "goal"):
 - If no repeated intent is detected, do NOT create a goal.
 
 Also extract:
-- "dailyArc": A single small suggested action to build momentum today.
 - "sentiment": Overall emotional tone (Positive, Neutral, Negative).
 - "tags": 3-5 relevant keywords.
 
@@ -70,7 +69,6 @@ Return ONLY valid JSON with this structure:
     { "type": "habit", "content": "..." },
     { "type": "goal", "content": "...", "milestones": ["milestone 1", "milestone 2"] }
   ],
-  "dailyArc": { "suggestedAction": "..." },
   "sentiment": "...",
   "tags": ["..."]
 }
@@ -93,17 +91,10 @@ New Entry:
           required: ["type", "content"]
         }
       },
-      dailyArc: {
-        type: "OBJECT",
-        properties: {
-          suggestedAction: { type: "STRING" }
-        },
-        required: ["suggestedAction"]
-      },
       sentiment: { type: "STRING", enum: ["Positive", "Neutral", "Negative"] },
       tags: { type: "ARRAY", items: { type: "STRING" } }
     },
-    required: ["shorts", "dailyArc", "sentiment", "tags"]
+    required: ["shorts", "sentiment", "tags"]
   };
 
   try {

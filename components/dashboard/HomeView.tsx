@@ -43,26 +43,7 @@ export function HomeView({
                         Your path to <span className="text-primary font-semibold underline decoration-primary/30 underline-offset-4">{currentFocus}</span> starts with a single reflection.
                     </p>
 
-                    {/* Daily Arc Actions */}
-                    <div className="space-y-3 mb-10">
-                        <p className="text-xs font-bold uppercase tracking-widest text-[#171717]/40 mb-2">The Daily Arc</p>
-                        {[
-                            "Send follow-up email to Sarah",
-                            "Draft the MVP roadmap",
-                        ].map((action, i) => (
-                            <motion.button
-                                key={i}
-                                whileHover={{ scale: 1.02, x: 5 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="group flex items-center w-full max-w-sm p-4 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-all text-left"
-                            >
-                                <div className="w-6 h-6 rounded-full border-2 border-primary/20 mr-4 flex items-center justify-center group-hover:border-primary/40 transition-colors">
-                                    <div className="w-2 h-2 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                                <span className={cn("font-semibold text-[#171717]/80 transition-all duration-300", isConcealed && "blur-sm select-none")}>{action}</span>
-                            </motion.button>
-                        ))}
-                    </div>
+
 
                     <Link href="/entries/new">
                         <Button

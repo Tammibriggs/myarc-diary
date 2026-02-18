@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth/next";
 import Entry from "@/models/Entry";
 import User from "@/models/User";
 import Short from "@/models/Short";
-import DailyArc from "@/models/DailyArc";
 import { analyzeEntryWithContext, embedText, cosineSimilarity } from "@/lib/gemini";
 import { syncToMemory } from "@/lib/mem0";
 import dbConnect from "@/lib/mongodb";
@@ -271,24 +270,7 @@ export async function POST(req: Request) {
                     }
                 }
 
-                // 6. Update Daily Arc
-                if (analysis.dailyArc) {
-                    const startOfDay = new Date();
-                    startOfDay.setHours(0, 0, 0, 0);
 
-                    await DailyArc.findOneAndUpdate(
-                        {
-                            userId: user._id,
-                            date: { $gte: startOfDay }
-                        },
-                        {
-                            $setOnInsert: { userId: user._id, date: new Date() },
-                            suggestedAction: analysis.dailyArc.suggestedAction,
-                            $inc: { momentumScore: 10 }
-                        },
-                        { upsert: true, new: true }
-                    );
-                }
             }
 
         } catch (aiError) {
